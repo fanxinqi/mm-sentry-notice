@@ -2,12 +2,15 @@ const request = require("request");
 const config = require("./config");
 const dayjs = require("dayjs");
 const day = dayjs().format("YYYY-MM-DD");
+const schedule = require("node-schedule");
 
-function getErrorList() {
+function getErrorList(url) {
   const p = new Promise((resolve, reject) => {
     const options = {
       method: "GET",
-      url: "https://ios-sentry.mm.taou.com/api/0/organizations/sentry/issues/?collapse=stats&expand=owners&expand=inbox&limit=10&project=11&query=is%3Aunresolved&shortIdLookup=1&sort=freq&statsPeriod=14d",
+      url:
+        url ||
+        "https://ios-sentry.mm.taou.com/api/0/organizations/sentry/issues/?collapse=stats&expand=owners&expand=inbox&limit=25&project=11&query=is%3Aunresolved&shortIdLookup=1&sort=freq&statsPeriod=14d",
       headers: {
         Authorization: config.authorization,
       },
@@ -18,6 +21,7 @@ function getErrorList() {
         reject(error);
         throw new Error(error);
       }
+      // console.log(response.body);
       resolve(JSON.parse(response.body));
     });
   });
@@ -33,12 +37,18 @@ function unique(arr) {
 function getMsg(sentryData, email_users) {
   let msgs = [];
   sentryData.forEach((item, index) => {
-    if (item && item.assignedTo && item.assignedTo) {
-      const feishuinfo = email_users[item.assignedTo.email][0];
+    const AtEmail = email_users[item.assignedTo.email];
+    if (item && item.assignedTo && item.assignedTo && AtEmail) {
+      const feishuinfo = AtEmail[0];
       let msg = [];
+      // msg.push({
+      //   tag: "text",
+      //   text: index,
+      // });
       msg.push({
         tag: "text",
-        text: index,
+        un_escape: true,
+        text: `${index + 1}=>`,
       });
       msg.push({
         tag: "a",
@@ -55,27 +65,45 @@ function getMsg(sentryData, email_users) {
   msgs.push([
     {
       tag: "text",
-      text: "烦请及时登录sentry分配对应负责的同学，如果可以忽略的错误，经部门负责人审核过了可以@范新旗，+入忽略列表 ",
+      text: "如果可以忽略的错误，经业务onwer审核过了可以@范新旗，+入忽略列表 ",
     },
   ]);
   return msgs;
 }
 
+function getIntersection(arry1, arry2) {
+  return arr1.filter((item) => arr2.includes(item));
+}
 //open.feishu.cn/open-apis/bot/v2/hook/c32de9ee-12ee-4dc1-8409-5bcad248db85
-async function main() {
+async function taskMain(type) {
   // 获取sentry 错误列表
-  const data = await getErrorList();
+  const data = await getErrorList(
+    "https://ios-sentry.mm.taou.com/api/0/organizations/sentry/issues/?collapse=stats&expand=owners&expand=inbox&limit=10&project=11&query=is%3Aunresolved&shortIdLookup=1&sort=freq&statsPeriod=24h"
+  );
 
   // 获取邮箱列表
   const emails = unique(data.map((item) => (item.assignedTo || {}).email));
 
   //可以@到人
   const openids = await getFeishuUserId(emails);
-  // console.log(JSON.parse(openids).data.email_users);
-  const msg = await getMsg(data, openids.data.email_users);
 
-  //发送飞送消息
-  sendMsg("226472c9-80bd-4c7d-a96a-311f7336e79b", msg);
+  // job
+  if (type === "job") {
+    // console.log(openids)
+    const email_feishu_users = {};
+    Object.keys(openids.data.email_users).forEach((key) => {
+      if (config.recruitFEEmail.includes(key)) {
+        email_feishu_users[key] = openids.data.email_users[key];
+      }
+    });
+    const msg = await getMsg(data, email_feishu_users);
+    // 发送飞送消息
+    sendMsg("fed83acd-cd34-4e1b-a190-f570dd5243bd", msg);
+  } else {
+    const msg = await getMsg(data, openids.data.email_users);
+    // 发送飞送消息
+    sendMsg("226472c9-80bd-4c7d-a96a-311f7336e79b", msg);
+  }
 }
 
 function getToken() {
@@ -133,31 +161,17 @@ async function getFeishuUserId(emails) {
   });
   return p;
 }
-// ret_str = utility.request_http(url=url, query_dict=qdict, headers={'Authorization': 'Bearer %s' % token},
-//                                post=False, timeout=3, logger=manager.logger, tryn=1,
-//                                retry_sleep=2)
-// ret = jsonutil.try_parse_json(ret_str, {})
-// data = ret.get('data', {}).get('email_users', {}).get(email, [])
-// return data[0].get('user_id') if data else ''
-// }
-
-// send msg
 
 /*
  *id:机器人id
  */
 const sendMsg = (id, msgArray) => {
   const msg = {
-    // msg_type: "text",
-    // // "receive_id": "oc_xxx",
-    // content: {
-    //   text: msgText,
-    // },
     msg_type: "post",
     content: {
       post: {
         zh_cn: {
-          title: day + "报错pvtop10排行，请大家及时修复",
+          title: day + "报错pv top10排行，请大家及时修复",
           content: msgArray,
         },
       },
@@ -183,4 +197,21 @@ const sendMsg = (id, msgArray) => {
   }
   httprequest(`https://open.feishu.cn/open-apis/bot/v2/hook/${id}`, msg);
 };
-main();
+
+// 定时任务
+const scheduleTask = () => {
+  let rule = new schedule.RecurrenceRule();
+  //每周一、周三、周五的 10:10分
+  rule.dayOfWeek = [1, 3, 5];
+  rule.hour = [14];
+  rule.minute = 20;
+  rule.second = 0;
+  schedule.scheduleJob(rule, () => {
+    taskMain();
+    taskMain('job');
+  });
+};
+
+scheduleTask();
+
+// taskMain();
