@@ -65,7 +65,7 @@ function getMsg(sentryData, email_users) {
   msgs.push([
     {
       tag: "text",
-      text: "如果可以忽略的错误，经业务onwer审核过了可以@范新旗，+入忽略列表 ",
+      text: "辛苦大家即时修复，如果可以忽略的错误，经业务onwer审核过了可以@范新旗，+入忽略列表 ",
     },
   ]);
   return msgs;
