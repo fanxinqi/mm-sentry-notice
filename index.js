@@ -204,7 +204,7 @@ const scheduleTask = () => {
   //每周一、周三、周五的 10:10分
   rule.dayOfWeek = [1, 3, 5];
   rule.hour = [14];
-  rule.minute = 30;
+  rule.minute = 10;
   rule.second = 0;
   schedule.scheduleJob(rule, () => {
     taskMain();
