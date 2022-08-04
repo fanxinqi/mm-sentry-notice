@@ -13,7 +13,8 @@ const recruitFEEmail = [
   "liushuang@taou.com",
   "little@taou.com",
   "yangkun@taou.com",
-  "yangweishan@taou.com"
+  "yangweishan@taou.com",
+  "zengrui@taou.com"
 ];
 
 const config = {
