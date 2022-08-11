@@ -39,6 +39,7 @@ var request = require("request");
 var config = require("./config");
 var dayjs = require("dayjs");
 var day = dayjs().format("YYYY-MM-DD");
+var schedule = require("node-schedule");
 var Q = {
     Q1: [0, 1, 2],
     Q2: [3, 4, 5],
@@ -190,51 +191,77 @@ function getMsg(MsgObj) {
 }
 (function () {
     return __awaiter(this, void 0, void 0, function () {
-        var timeProcess, errorTarget, performancTarget;
-        var _a, _b;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
-                case 0: return [4 /*yield*/, getCurrentQTimeSchedule()];
+        var scheduleTask;
+        var _this = this;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    scheduleTask = function () { return __awaiter(_this, void 0, void 0, function () {
+                        var rule;
+                        var _this = this;
+                        return __generator(this, function (_a) {
+                            rule = new schedule.RecurrenceRule();
+                            //每周一、周三、周五的 10:0:0
+                            rule.dayOfWeek = [1, 2, 3, 4, 5];
+                            rule.hour = [10];
+                            rule.minute = 0;
+                            rule.second = 0;
+                            schedule.scheduleJob(rule, function () { return __awaiter(_this, void 0, void 0, function () {
+                                var timeProcess, errorTarget, performancTarget;
+                                var _a, _b;
+                                return __generator(this, function (_c) {
+                                    switch (_c.label) {
+                                        case 0: return [4 /*yield*/, getCurrentQTimeSchedule()];
+                                        case 1:
+                                            timeProcess = _c.sent();
+                                            _a = {
+                                                timeProcess: timeProcess * 100,
+                                                start: 0.62,
+                                                end: 0.5
+                                            };
+                                            return [4 /*yield*/, getErrorRate()];
+                                        case 2:
+                                            errorTarget = (_a.current = (_c.sent()) * 100,
+                                                _a.percentage = 0,
+                                                _a.status = "正常",
+                                                _a);
+                                            errorTarget.percentage =
+                                                ((errorTarget.current - errorTarget.start) /
+                                                    (errorTarget.end - errorTarget.start)) *
+                                                    100;
+                                            errorTarget.status =
+                                                errorTarget.percentage > errorTarget.timeProcess ? "正常" : "风险";
+                                            _b = {
+                                                timeProcess: timeProcess * 100,
+                                                start: 1,
+                                                end: 0.5
+                                            };
+                                            return [4 /*yield*/, getPerformanceRate()];
+                                        case 3:
+                                            performancTarget = (_b.current = (_c.sent()) * 100,
+                                                _b.percentage = 0,
+                                                _b.status = "正常",
+                                                _b);
+                                            performancTarget.percentage =
+                                                ((performancTarget.current - performancTarget.start) /
+                                                    (performancTarget.end - performancTarget.start)) *
+                                                    100;
+                                            performancTarget.status =
+                                                performancTarget.percentage > performancTarget.timeProcess
+                                                    ? "正常"
+                                                    : "风险";
+                                            sendMsg("c32de9ee-12ee-4dc1-8409-5bcad248db85", getMsg(performancTarget), "前端性能指标(7日内LCP>2.5s的页面访问占比<0.5)");
+                                            sendMsg("c32de9ee-12ee-4dc1-8409-5bcad248db85", getMsg(errorTarget), "前端稳定指标(7日内报错率占比<0.5%)");
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            }); });
+                            return [2 /*return*/];
+                        });
+                    }); };
+                    return [4 /*yield*/, scheduleTask()];
                 case 1:
-                    timeProcess = _c.sent();
-                    _a = {
-                        timeProcess: timeProcess * 100,
-                        start: 0.62,
-                        end: 0.5
-                    };
-                    return [4 /*yield*/, getErrorRate()];
-                case 2:
-                    errorTarget = (_a.current = (_c.sent()) * 100,
-                        _a.percentage = 0,
-                        _a.status = "正常",
-                        _a);
-                    errorTarget.percentage =
-                        ((errorTarget.current - errorTarget.start) /
-                            (errorTarget.end - errorTarget.start)) *
-                            100;
-                    errorTarget.status =
-                        errorTarget.percentage > errorTarget.timeProcess ? "正常" : "风险";
-                    _b = {
-                        timeProcess: timeProcess * 100,
-                        start: 1,
-                        end: 0.5
-                    };
-                    return [4 /*yield*/, getPerformanceRate()];
-                case 3:
-                    performancTarget = (_b.current = (_c.sent()) * 100,
-                        _b.percentage = 0,
-                        _b.status = "正常",
-                        _b);
-                    performancTarget.percentage =
-                        ((performancTarget.current - performancTarget.start) /
-                            (performancTarget.end - performancTarget.start)) *
-                            100;
-                    performancTarget.status =
-                        performancTarget.percentage > performancTarget.timeProcess
-                            ? "正常"
-                            : "风险";
-                    sendMsg("7820d037-9e5a-427c-a9be-27adb3a2dc79", getMsg(performancTarget), "前端性能指标(7日内LCP>2.5s的页面访问占比<0.5)");
-                    sendMsg("7820d037-9e5a-427c-a9be-27adb3a2dc79", getMsg(errorTarget), "前端稳定指标(7日内报错率占比<0.5%)");
+                    _a.sent();
                     return [2 /*return*/];
             }
         });
