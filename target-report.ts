@@ -2,6 +2,7 @@ const request = require("request");
 const config = require("./config");
 const dayjs = require("dayjs");
 const day = dayjs().format("YYYY-MM-DD");
+const schedule = require("node-schedule");
 
 const Q = {
   Q1: [0, 1, 2],
@@ -17,7 +18,7 @@ interface Target {
   end: number; //目标期望值
   current: number; // 目标当前值
   percentage: number; //进度
-  status:string;
+  status: string;
 }
 const TargetName = {
   timeProcess: "时间进度",
@@ -98,7 +99,7 @@ const getCurrentQTimeSchedule = async () => {
 /*
  *id:机器人id
  */
-const sendMsg = (id, msgArray,title) => {
+const sendMsg = (id, msgArray, title) => {
   const msg = {
     msg_type: "post",
     content: {
@@ -142,14 +143,16 @@ async function report() {
 
 function getMsg(MsgObj) {
   const msgs: any = [],
-  msg: any = [];
-  Object.keys(MsgObj).forEach(key=>{
+    msg: any = [];
+  Object.keys(MsgObj).forEach((key) => {
     msg.push({
       tag: "text",
       un_escape: true,
-      text: `${TargetName[key]}:${MsgObj[key] + '%'} \n`,
+      text: `${TargetName[key]}:${
+        MsgObj[key] + (key === "status" ? "" : "%")
+      } \n`,
     });
-  })
+  });
   msg.push({
     tag: "text",
     un_escape: true,
@@ -161,34 +164,58 @@ function getMsg(MsgObj) {
 }
 
 (async function () {
-  const timeProcess = await getCurrentQTimeSchedule();
-  const errorTarget: Target = {
-    timeProcess: timeProcess * 100,
-    start: 0.62,
-    end: 0.5,
-    current: (await getErrorRate()) * 100, // 单位百分比 =>小数
-    percentage: 0,
-    status:'正常'
+  const scheduleTask = async () => {
+    let rule = new schedule.RecurrenceRule();
+    //每周一、周三、周五的 10:10分
+    rule.dayOfWeek = [1, 2, 3, 4, 5];
+    rule.hour = [10];
+    rule.minute = 0;
+    rule.second = 0;
+    schedule.scheduleJob(rule, async () => {
+      const timeProcess = await getCurrentQTimeSchedule();
+      const errorTarget: Target = {
+        timeProcess: timeProcess * 100,
+        start: 0.62,
+        end: 0.5,
+        current: (await getErrorRate()) * 100, // 单位百分比 =>小数
+        percentage: 0,
+        status: "正常",
+      };
+      errorTarget.percentage =
+        ((errorTarget.current - errorTarget.start) /
+          (errorTarget.end - errorTarget.start)) *
+        100;
+      errorTarget.status =
+        errorTarget.percentage > errorTarget.timeProcess ? "正常" : "风险";
+
+      const performancTarget: Target = {
+        timeProcess: timeProcess * 100,
+        start: 1,
+        end: 0.5,
+        current: (await getPerformanceRate()) * 100, // 单位百分比 =>小数
+        percentage: 0,
+        status: "正常",
+      };
+
+      performancTarget.percentage =
+        ((performancTarget.current - performancTarget.start) /
+          (performancTarget.end - performancTarget.start)) *
+        100;
+      performancTarget.status =
+        performancTarget.percentage > performancTarget.timeProcess
+          ? "正常"
+          : "风险";
+      sendMsg(
+        "7820d037-9e5a-427c-a9be-27adb3a2dc79",
+        getMsg(performancTarget),
+        "前端性能指标(7日内LCP>2.5s的页面访问占比<0.5)"
+      );
+      sendMsg(
+        "7820d037-9e5a-427c-a9be-27adb3a2dc79",
+        getMsg(errorTarget),
+        "前端稳定指标(7日内报错率占比<0.5%)"
+      );
+    });
   };
-  errorTarget.percentage =
-    (errorTarget.current - errorTarget.start) /
-    (errorTarget.end - errorTarget.start) * 100;
-    errorTarget.status = errorTarget.percentage >errorTarget.timeProcess? '正常':'风险';
-
-  const performancTarget: Target = {
-    timeProcess: timeProcess * 100,
-    start: 1,
-    end: 0.5,
-    current: (await getPerformanceRate()) * 100, // 单位百分比 =>小数
-    percentage: 0,
-    status:'正常'
-  };
-
-  performancTarget.percentage =
-    (performancTarget.current - performancTarget.start) /
-    (performancTarget.end - performancTarget.start) * 100;
-    performancTarget.status = performancTarget.percentage >performancTarget.timeProcess? '正常':'风险';
-
-   sendMsg('c32de9ee-12ee-4dc1-8409-5bcad248db85',getMsg(performancTarget),'前端性能指标(7日内LCP>2.5s的页面访问占比<0.5)');
-   sendMsg('c32de9ee-12ee-4dc1-8409-5bcad248db85',getMsg(errorTarget),'前端稳定指标(7日内报错率占比<0.5%)');
+  await scheduleTask();
 })();

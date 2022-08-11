@@ -177,7 +177,7 @@ function getMsg(MsgObj) {
         msg.push({
             tag: "text",
             un_escape: true,
-            text: "".concat(TargetName[key], ":").concat(MsgObj[key] + '%', " \n")
+            text: "".concat(TargetName[key], ":").concat(MsgObj[key] + (key === "status" ? "" : "%"), " \n")
         });
     });
     msg.push({
@@ -206,12 +206,14 @@ function getMsg(MsgObj) {
                 case 2:
                     errorTarget = (_a.current = (_c.sent()) * 100,
                         _a.percentage = 0,
-                        _a.status = '正常',
+                        _a.status = "正常",
                         _a);
                     errorTarget.percentage =
-                        (errorTarget.current - errorTarget.start) /
-                            (errorTarget.end - errorTarget.start) * 100;
-                    errorTarget.status = errorTarget.percentage > errorTarget.timeProcess ? '正常' : '风险';
+                        ((errorTarget.current - errorTarget.start) /
+                            (errorTarget.end - errorTarget.start)) *
+                            100;
+                    errorTarget.status =
+                        errorTarget.percentage > errorTarget.timeProcess ? "正常" : "风险";
                     _b = {
                         timeProcess: timeProcess * 100,
                         start: 1,
@@ -221,14 +223,18 @@ function getMsg(MsgObj) {
                 case 3:
                     performancTarget = (_b.current = (_c.sent()) * 100,
                         _b.percentage = 0,
-                        _b.status = '正常',
+                        _b.status = "正常",
                         _b);
                     performancTarget.percentage =
-                        (performancTarget.current - performancTarget.start) /
-                            (performancTarget.end - performancTarget.start) * 100;
-                    performancTarget.status = performancTarget.percentage > performancTarget.timeProcess ? '正常' : '风险';
-                    sendMsg('c32de9ee-12ee-4dc1-8409-5bcad248db85', getMsg(performancTarget), '前端性能指标(7日内LCP<2.5s占比)');
-                    sendMsg('c32de9ee-12ee-4dc1-8409-5bcad248db85', getMsg(errorTarget), '前端稳定指标(7日内报错率占比<0.5%)');
+                        ((performancTarget.current - performancTarget.start) /
+                            (performancTarget.end - performancTarget.start)) *
+                            100;
+                    performancTarget.status =
+                        performancTarget.percentage > performancTarget.timeProcess
+                            ? "正常"
+                            : "风险";
+                    sendMsg("7820d037-9e5a-427c-a9be-27adb3a2dc79", getMsg(performancTarget), "前端性能指标(7日内LCP>2.5s的页面访问占比<0.5)");
+                    sendMsg("7820d037-9e5a-427c-a9be-27adb3a2dc79", getMsg(errorTarget), "前端稳定指标(7日内报错率占比<0.5%)");
                     return [2 /*return*/];
             }
         });
