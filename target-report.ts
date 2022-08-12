@@ -169,7 +169,7 @@ function getMsg(MsgObj) {
     //每周一、周三、周五的 10:0:0分
     rule.dayOfWeek = [1, 2, 3, 4, 5];
     rule.hour = [10];
-    rule.minute = 0;
+    rule.minute = 30;
     rule.second = 0;
     schedule.scheduleJob(rule, async () => {
       const timeProcess = await getCurrentQTimeSchedule();

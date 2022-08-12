@@ -201,10 +201,10 @@ function getMsg(MsgObj) {
                         var _this = this;
                         return __generator(this, function (_a) {
                             rule = new schedule.RecurrenceRule();
-                            //每周一、周三、周五的 10:0:0
+                            //每周一、周三、周五的 10:0:0分
                             rule.dayOfWeek = [1, 2, 3, 4, 5];
                             rule.hour = [10];
-                            rule.minute = 0;
+                            rule.minute = 30;
                             rule.second = 0;
                             schedule.scheduleJob(rule, function () { return __awaiter(_this, void 0, void 0, function () {
                                 var timeProcess, errorTarget, performancTarget;
@@ -250,8 +250,8 @@ function getMsg(MsgObj) {
                                                 performancTarget.percentage > performancTarget.timeProcess
                                                     ? "正常"
                                                     : "风险";
-                                            sendMsg("c32de9ee-12ee-4dc1-8409-5bcad248db85", getMsg(performancTarget), "前端性能指标(7日内LCP>2.5s的页面访问占比<0.5)");
-                                            sendMsg("c32de9ee-12ee-4dc1-8409-5bcad248db85", getMsg(errorTarget), "前端稳定指标(7日内报错率占比<0.5%)");
+                                            sendMsg("7820d037-9e5a-427c-a9be-27adb3a2dc79", getMsg(performancTarget), "前端性能指标(7日内LCP>2.5s的页面访问占比<0.5)");
+                                            sendMsg("7820d037-9e5a-427c-a9be-27adb3a2dc79", getMsg(errorTarget), "前端稳定指标(7日内报错率占比<0.5%)");
                                             return [2 /*return*/];
                                     }
                                 });
