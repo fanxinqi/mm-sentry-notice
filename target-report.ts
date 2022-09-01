@@ -1,7 +1,6 @@
 const request = require("request");
 const config = require("./config");
 const dayjs = require("dayjs");
-const day = dayjs().format("YYYY-MM-DD");
 const schedule = require("node-schedule");
 
 const Q = {
@@ -100,6 +99,7 @@ const getCurrentQTimeSchedule = async () => {
  *id:机器人id
  */
 const sendMsg = (id, msgArray, title) => {
+  const day = dayjs().format("YYYY-MM-DD");
   const msg = {
     msg_type: "post",
     content: {
@@ -185,6 +185,10 @@ function getMsg(MsgObj) {
         ((errorTarget.current - errorTarget.start) /
           (errorTarget.end - errorTarget.start)) *
         100;
+      // 保留两位小数
+      errorTarget.percentage = parseFloat(errorTarget.percentage.toFixed(2));
+      errorTarget.timeProcess = parseFloat(errorTarget.timeProcess.toFixed(2));
+      errorTarget.current = parseFloat(errorTarget.current.toFixed(2));
       errorTarget.status =
         errorTarget.percentage > errorTarget.timeProcess ? "正常" : "风险";
 
@@ -201,6 +205,18 @@ function getMsg(MsgObj) {
         ((performancTarget.current - performancTarget.start) /
           (performancTarget.end - performancTarget.start)) *
         100;
+
+      // 保留两位小数
+      performancTarget.percentage = parseFloat(
+        performancTarget.percentage.toFixed(2)
+      );
+      performancTarget.timeProcess = parseFloat(
+        performancTarget.timeProcess.toFixed(2)
+      );
+      performancTarget.current = parseFloat(
+        performancTarget.current.toFixed(2)
+      );
+
       performancTarget.status =
         performancTarget.percentage > performancTarget.timeProcess
           ? "正常"

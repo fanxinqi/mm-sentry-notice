@@ -19,6 +19,7 @@
   "homepage": "https://github.com/fanxinqi/mm-sentry-notice#readme",
   "dependencies": {
     "dayjs": "^1.11.4",
+    "face-api.js": "^0.22.2",
     "node-schedule": "^2.1.0",
     "request": "^2.88.2"
   }
