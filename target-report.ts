@@ -77,7 +77,7 @@ const getCurrentQTimeSchedule = async () => {
         totalDay += dayjs(nowTime).date(mi).daysInMonth();
       });
 
-      const Qindex = Q[m].includes(month);
+      const Qindex = Q[m].indexOf(month);
       if (Qindex > 1) {
         processDay =
           dayjs(nowTime).date(Q[m][0]).daysInMonth() +

@@ -114,7 +114,7 @@ var getCurrentQTimeSchedule = function () { return __awaiter(_this, void 0, void
                 Q[m].forEach(function (mi) {
                     totalDay_1 += dayjs(nowTime).date(mi).daysInMonth();
                 });
-                var Qindex = Q[m].includes(month);
+                var Qindex = Q[m].indexOf(month);
                 if (Qindex > 1) {
                     processDay =
                         dayjs(nowTime).date(Q[m][0]).daysInMonth() +
