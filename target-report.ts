@@ -175,8 +175,8 @@ function getMsg(MsgObj) {
       const timeProcess = await getCurrentQTimeSchedule();
       const errorTarget: Target = {
         timeProcess: timeProcess * 100,
-        start: 0.62,
-        end: 0.5,
+        start: 0.5,
+        end: 0.35,
         current: (await getErrorRate()) * 100, // 单位百分比 =>小数
         percentage: 0,
         status: "正常",
@@ -194,7 +194,7 @@ function getMsg(MsgObj) {
 
       const performancTarget: Target = {
         timeProcess: timeProcess * 100,
-        start: 1,
+        start: 0.77,
         end: 0.5,
         current: (await getPerformanceRate()) * 100, // 单位百分比 =>小数
         percentage: 0,

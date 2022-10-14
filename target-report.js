@@ -216,8 +216,8 @@ function getMsg(MsgObj) {
                                             timeProcess = _c.sent();
                                             _a = {
                                                 timeProcess: timeProcess * 100,
-                                                start: 0.62,
-                                                end: 0.5
+                                                start: 0.5,
+                                                end: 0.35
                                             };
                                             return [4 /*yield*/, getErrorRate()];
                                         case 2:
@@ -237,7 +237,7 @@ function getMsg(MsgObj) {
                                                 errorTarget.percentage > errorTarget.timeProcess ? "正常" : "风险";
                                             _b = {
                                                 timeProcess: timeProcess * 100,
-                                                start: 1,
+                                                start: 0.77,
                                                 end: 0.5
                                             };
                                             return [4 /*yield*/, getPerformanceRate()];
